@@ -1,0 +1,49 @@
+{
+  "name": "pokecomparator",
+  "version": "1.0.0",
+  "description": "Side-by-side Pokemon stat, ability and typing comparison tool",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "data": "node scripts/build-data.mjs",
+    "serve": "node scripts/serve.mjs",
+    "android:sync": "npx cap sync android",
+    "android:apk": "npx cap sync android && cd android && gradlew.bat assembleRelease",
+    "pc": "electron .",
+    "pc:build": "electron-builder --win portable",
+    "android:debug": "npx cap sync android && cd android && gradlew.bat assembleDebug",
+    "shots": "electron scripts/shot.js shots"
+  },
+  "build": {
+    "appId": "com.pokecomparator.app",
+    "productName": "PokeComparator",
+    "directories": {
+      "output": "dist-pc"
+    },
+    "files": [
+      "electron/**",
+      "www/**",
+      "!www/data/pokedex.json"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "www/icon.png",
+      "artifactName": "PokeComparator-${version}-portable.exe"
+    }
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3",
+    "electron": "^44.2.0",
+    "electron-builder": "^26.15.3",
+    "sharp": "^0.35.4"
+  }
+}

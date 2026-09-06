@@ -1,0 +1,12 @@
+{
+  "name": "PokeComparator",
+  "short_name": "PokeComparator",
+  "description": "Side-by-side Pokémon stat, ability and typing comparison",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1b1b1f",
+  "theme_color": "#1b1b1f",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "appId": "com.pokecomparator.app",
+  "appName": "PokeComparator",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 600,
+      "launchAutoHide": true,
+      "backgroundColor": "#1b1b1f",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#1b1b1f",
+      "overlaysWebView": false
+    }
+  }
+}

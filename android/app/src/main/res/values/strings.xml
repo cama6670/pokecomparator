@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PokeComparator</string>
+    <string name="title_activity_main">PokeComparator</string>
+    <string name="package_name">com.pokecomparator.app</string>
+    <string name="custom_url_scheme">com.pokecomparator.app</string>
+</resources>

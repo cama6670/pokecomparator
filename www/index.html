@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b1b1f" />
+  <meta name="color-scheme" content="dark" />
+  <title>PokeComparator</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button class="iconbtn" id="btnMenu" aria-label="Menu" title="Menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+    </button>
+    <h1 class="title">Poke-Comparator</h1>
+    <button class="iconbtn" id="btnAddCol" aria-label="Add column" title="Add a column">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+    </button>
+    <button class="iconbtn" id="btnAbout" aria-label="About" title="About">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M12 11v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <main id="columns" class="columns"></main>
+
+  <div id="loading" class="loading">Loading Pokédex…</div>
+
+  <!-- Side menu -->
+  <div id="menu" class="sheet hidden" role="dialog" aria-modal="true">
+    <div class="sheet-backdrop" data-close></div>
+    <nav class="sheet-panel menu-panel">
+      <h2>Poke-Comparator</h2>
+      <button class="menuitem" data-action="swap">Swap columns</button>
+      <button class="menuitem" data-action="add">Add column</button>
+      <button class="menuitem" data-action="remove">Remove last column</button>
+      <button class="menuitem" data-action="reset">Reset to defaults</button>
+      <label class="menuitem toggle"><input type="checkbox" id="optDefense" /> Show type defenses</label>
+      <label class="menuitem toggle"><input type="checkbox" id="optDiff" /> Highlight stat winners</label>
+      <label class="menuitem toggle"><input type="checkbox" id="optForms" /> Include alternate forms in search</label>
+      <button class="menuitem" data-action="about">About</button>
+    </nav>
+  </div>
+
+  <!-- Search overlay -->
+  <div id="search" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="search-head">
+      <button class="iconbtn" data-close aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+      <input id="searchInput" type="search" placeholder="Search name or dex number…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <button class="iconbtn" id="searchClear" aria-label="Clear">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+      </button>
+    </div>
+    <div class="search-filters">
+      <label class="chip"><input type="checkbox" id="fForms" /> Forms</label>
+      <label class="chip"><input type="checkbox" id="fMega" /> Megas only</label>
+      <select id="fType" class="chip-select" aria-label="Filter by type"><option value="">Any type</option></select>
+      <select id="fGen" class="chip-select" aria-label="Filter by generation"><option value="">Any gen</option></select>
+    </div>
+    <div id="searchResults" class="search-results"></div>
+  </div>
+
+  <!-- Generic modal -->
+  <div id="modal" class="sheet hidden" role="dialog" aria-modal="true">
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel modal-panel" id="modalContent"></div>
+  </div>
+
+  <script src="data/pokedex.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
