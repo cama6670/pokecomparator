@@ -104,6 +104,14 @@ svg { width: 24px; height: 24px; display: block; }
 /* Stats */
 .stats { background: var(--panel); border-radius: var(--radius); padding: 10px 10px 12px; }
 .stats h4, .abil h4, .def h4 { margin: 0 0 8px; text-align: center; font-size: 1.05rem; }
+.stattabs { display: flex; gap: 2px; padding: 2px; margin: 0 0 6px; background: rgba(0,0,0,.28); border-radius: 8px; }
+.stattab {
+  flex: 1 1 auto; min-width: 0; padding: 5px 2px; border: 0; border-radius: 6px; background: none; cursor: pointer;
+  color: var(--muted); font-size: .74rem; font-weight: 700; white-space: nowrap;
+}
+.stattab:hover { color: var(--fg); }
+.stattab.sel { background: var(--accent); color: #fff; }
+.statsub { margin: 0 0 4px; text-align: center; color: var(--muted); font-size: .7rem; line-height: 1.3; }
 .statrow { display: grid; grid-template-columns: 3.4em minmax(0,1fr) 2.6em; align-items: center; gap: 6px; margin: 6px 0; }
 .statrow .lbl { text-align: right; font-weight: 700; color: var(--muted); font-size: .92rem; }
 .statrow .track { display: block; height: 14px; background: rgba(0,0,0,.28); border-radius: 4px; overflow: hidden; }

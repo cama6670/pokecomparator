@@ -10,6 +10,7 @@
 
   const LATEST_GEN = Math.max(...DB.generations.map((g) => g.gen));
   const STAT_NAMES = ['Hp', 'Atk', 'Def', 'S.Atk', 'S.Def', 'Spe'];
+  const STAT_MODES = [['base', 'Base'], ['lv50', 'Lv 50'], ['max', 'Max'], ['min', 'Min']];
   const TYPE_COLORS = {
     normal: '#8f8f6e', fire: '#e0702a', water: '#4f7fe0', electric: '#e0b81a', grass: '#5faa3a', ice: '#5fb8b5',
     fighting: '#b52a24', poison: '#8d3a8b', ground: '#c9a34e', flying: '#8f78d8', psychic: '#e04a7a', bug: '#8fa118',
@@ -51,6 +52,7 @@
     showDefense: true,
     highlightDiff: true,
     searchForms: true,
+    statMode: 'base',
   };
   let state = loadState();
   function loadState() {
@@ -58,6 +60,7 @@
       const s = JSON.parse(localStorage.getItem('pc-state'));
       if (s && Array.isArray(s.cols) && s.cols.length) {
         s.cols = s.cols.slice(0, 4).map((c) => ({ key: byKey.has(c.key) ? c.key : null, gen: clampGen(c.gen) }));
+        if (!STAT_MODES.some(([k]) => k === s.statMode)) s.statMode = DEFAULT_STATE.statMode;
         return { ...DEFAULT_STATE, ...s };
       }
     } catch {}
@@ -106,6 +109,30 @@
     if (p.mega && gen < 6) notes.push('Mega Evolution was introduced in Gen 6');
     return { types, stats, abilities, notes };
   }
+  // Actual stats at level 50 from base stats. Gen 3+: IVs 0-31, EVs 0-252, natures ×0.9/×1.1.
+  // Gen 1-2: DVs 0-15, stat exp 0-65535, no natures. "max"/"min" are each stat's own best/worst case.
+  function levelStats(p, base, gen, mode) {
+    const L = 50;
+    return base.map((b, i) => {
+      if (i === 0 && p.key === 'shedinja') return 1;
+      if (gen <= 2) {
+        const dv = mode === 'min' ? 0 : 15;
+        const exp = mode === 'max' ? 64 : 0; // floor(ceil(sqrt(65535)) / 4)
+        const core = Math.floor((((b + dv) * 2 + exp) * L) / 100);
+        return i === 0 ? core + L + 10 : core + 5;
+      }
+      const iv = mode === 'min' ? 0 : 31;
+      const ev = mode === 'max' ? 252 : 0;
+      const core = Math.floor(((2 * b + iv + Math.floor(ev / 4)) * L) / 100);
+      if (i === 0) return core + L + 10;
+      const nature = mode === 'max' ? 110 : mode === 'min' ? 90 : 100;
+      return Math.floor(((core + 5) * nature) / 100);
+    });
+  }
+  function statModeNote(mode, gen) {
+    if (gen <= 2) return { lv50: 'Lv 50 · max DVs · no stat exp.', max: 'Lv 50 · max DVs and stat exp.', min: 'Lv 50 · 0 DVs · no stat exp.' }[mode];
+    return { lv50: 'Lv 50 · 31 IVs · 0 EVs · neutral nature', max: 'Lv 50 · 31 IVs · 252 EVs · beneficial nature', min: 'Lv 50 · 0 IVs · 0 EVs · hindering nature' }[mode];
+  }
   function defenses(types) {
     const res = {};
     for (const atk of TYPES) {
@@ -143,9 +170,19 @@
     p.img ? `<img class="${cls}" src="img/${p.img}.webp" alt="${esc(p.name)}" loading="lazy" decoding="async" />` : PLACEHOLDER;
 
   function render() {
-    const views = state.cols.map((c) => (c.key ? view(byKey.get(c.key), c.gen) : null));
-    const maxStat = STAT_NAMES.map((_, i) => Math.max(...views.map((v) => (v ? v.stats[i] : -1))));
-    const maxTotal = Math.max(...views.map((v) => (v ? v.stats.reduce((a, b) => a + b, 0) : -1)));
+    const mode = state.statMode;
+    const views = state.cols.map((c) => {
+      if (!c.key) return null;
+      const p = byKey.get(c.key);
+      const v = view(p, c.gen);
+      v.shown = mode === 'base' ? v.stats : levelStats(p, v.stats, c.gen, mode);
+      return v;
+    });
+    const maxStat = STAT_NAMES.map((_, i) => Math.max(...views.map((v) => (v ? v.shown[i] : -1))));
+    const maxTotal = Math.max(...views.map((v) => (v ? v.shown.reduce((a, b) => a + b, 0) : -1)));
+    const tabs = `<div class="stattabs" role="group" aria-label="Stat display">${STAT_MODES.map(
+      ([k, label]) => `<button class="stattab${k === mode ? ' sel' : ''}" data-statmode="${k}" aria-pressed="${k === mode}">${label}</button>`
+    ).join('')}</div>`;
     const multi = views.filter(Boolean).length > 1;
 
     columnsEl.dataset.n = String(state.cols.length);
@@ -171,13 +208,18 @@
         </button>`;
         for (const n of v.notes) html += `<div class="note">⚠ ${esc(n)}</div>`;
 
-        const total = v.stats.reduce((a, b) => a + b, 0);
-        html += `<div class="stats"><h4>Stats</h4>`;
-        v.stats.forEach((s, si) => {
+        const total = v.shown.reduce((a, b) => a + b, 0);
+        html += `<div class="stats"><h4>Stats</h4>${tabs}`;
+        if (mode !== 'base') html += `<div class="statsub">${esc(statModeNote(mode, c.gen))}</div>`;
+        // Bars and colours always follow the base stat; the number follows the selected mode.
+        v.stats.forEach((b, si) => {
+          const s = v.shown[si];
           const win = multi && s === maxStat[si];
-          html += `<div class="statrow${win ? ' win' : ''}"><span class="lbl">${STAT_NAMES[si]}</span><span class="track"><span class="bar" style="width:${Math.min(100, (s / 200) * 100)}%;background:${statColor(s)}"></span></span><span class="val">${s}</span></div>`;
+          html += `<div class="statrow${win ? ' win' : ''}"><span class="lbl">${STAT_NAMES[si]}</span><span class="track"><span class="bar" style="width:${Math.min(100, (b / 200) * 100)}%;background:${statColor(b)}"></span></span><span class="val">${s}</span></div>`;
         });
-        html += `<div class="statrow total${multi && total === maxTotal ? ' win' : ''}"><span class="lbl">Total</span><span class="track"></span><span class="val">${total}</span></div>`;
+        // Max/min apply each stat's best/worst case on its own, which no single Pokémon can have at once, so no total.
+        if (mode === 'base' || mode === 'lv50')
+          html += `<div class="statrow total${multi && total === maxTotal ? ' win' : ''}"><span class="lbl">Total</span><span class="track"></span><span class="val">${total}</span></div>`;
         html += `</div>`;
 
         html += `<div class="abil">`;
@@ -252,7 +294,7 @@
   function showAbout() {
     const d = new Date(DB.generated);
     openModal(`<h2>Poke-Comparator</h2><div class="sub">Side-by-side Pokémon stats, abilities and typing.</div>
-      <p>Tap a Pokémon card to search by name or National Dex number. Tap the purple version button to view a Pokémon as it was in an older generation. Tap an ability for its description.</p>
+      <p>Tap a Pokémon card to search by name or National Dex number. Tap the purple version button to view a Pokémon as it was in an older generation. Use the Base / Lv 50 / Max / Min tabs above the stats to switch between base stats and actual stats at level 50. Tap an ability for its description.</p>
       <p>Includes ${DB.pokemon.length.toLocaleString()} Pokémon and forms (Megas, regional forms, Gigantamax and more), ${Object.keys(DB.abilities).length} abilities, across ${LATEST_GEN} generations.</p>
       <p class="sub">Data: <a href="https://pokeapi.co" target="_blank" rel="noopener">PokéAPI</a>, snapshot ${d.toLocaleDateString()}. Works fully offline. Pokémon is © Nintendo / Creatures / GAME FREAK; this is an unofficial fan tool.</p>
       <button class="close" data-close>Close</button>`);
@@ -385,7 +427,6 @@
     }
     if (e.key === 'Escape') closeSearch();
   });
-  $('#searchClear').addEventListener('click', () => { searchInput.value = ''; runSearch(); searchInput.focus(); });
   [fForms, fMega, fType, fGen].forEach((el) => el.addEventListener('change', () => { searchLimit = 60; runSearch(); }));
   search.addEventListener('click', (e) => {
     if (e.target.closest('[data-close]')) return closeSearch();
@@ -400,6 +441,8 @@
 
   // ---------- Global events ----------
   columnsEl.addEventListener('click', (e) => {
+    const sm = e.target.closest('[data-statmode]');
+    if (sm) { state.statMode = sm.dataset.statmode; return render(); }
     const pick = e.target.closest('[data-pick]');
     if (pick) return openSearch(Number(pick.dataset.pick));
     const gen = e.target.closest('[data-gen]');

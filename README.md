@@ -17,6 +17,9 @@ Builds:
 
 - Search by name or National Dex number, with filters for forms, Megas, type and generation.
 - Stats with colour-coded bars and total; the higher stat in each row is highlighted.
+- Base / Lv 50 / Max / Min tabs switch between base stats and actual stats at level 50
+  (31 IVs and 0 EVs with a neutral nature; max is 31 IVs, 252 EVs and a beneficial nature;
+  min is 0 IVs, 0 EVs and a hindering nature; Gen 1–2 views use DVs and stat exp. instead).
 - Abilities (hidden ability marked), tap for the description.
 - Type badges plus a defensive matchup summary (weak to / resists / immune).
 - "Game Version" button per column shows a Pokémon as it was in an older generation
