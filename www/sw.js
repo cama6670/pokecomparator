@@ -1,5 +1,5 @@
 // Simple offline cache: app shell precached, images cached on first use.
-const VERSION = 'pc-v1';
+const VERSION = 'pc-v2';
 const SHELL = ['./', './index.html', './style.css', './app.js', './data/pokedex.js', './manifest.webmanifest', './icon.png'];
 
 self.addEventListener('install', (e) => {

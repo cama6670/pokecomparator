@@ -1,6 +1,6 @@
 {
   "name": "pokecomparator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Side-by-side Pokemon stat, ability and typing comparison tool",
   "private": true,
   "main": "electron/main.js",
